@@ -1,34 +1,37 @@
-version: "3.3"
-services:
+name: CI
 
-    #######################################################
-    #  Rabbitmq
-    #######################################################
-  rabbitmq:
-    image: rabbitmq:3-management
-    container_name: rabbitmq
-    restart: unless-stopped
-    ports:
-      - 5672:5672
-      - 15672:15672
-    networks:
-      - booking
+on:
+  push:
+    branches: [ "prod"]
+    paths-ignore:
+      - "README.md"
+      - "CHANGELOG.md"
+  pull_request:
+    branches: [ "prod" ]
+
+jobs:
+
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20.x'
+
+      - name: build building-blocks
+        run: |
+          npm install
+          npm run build
+        working-directory: ./src/building-blocks
+
+      - name: build identity
+        run: |
+          npm install
+          npm run build
+        working-directory: ./src/identity
 
 
-    #######################################################
-    #  Postgress
-    #######################################################
-  postgres:
-   container_name: postgres
-   image: postgres:latest
-   restart: unless-stopped
-   ports:
-    - '5432:5432'
-   environment:
-    - POSTGRES_USER=postgres
-    - POSTGRES_PASSWORD=postgres
-   networks:
-    - booking
 
-networks:
-  booking:
